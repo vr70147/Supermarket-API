@@ -1,15 +1,12 @@
 const express = require('express');
-const UserService = require('../services/user-service');
+const UsersRouter = require('../routes/users');
 const router = express.Router();
+const UserService = require('./user-service');
 const bcrypt = require('bcrypt');
 
-router.get('/', async (req, res) => {
-  const users = await UserService.find();
-  res.send(users);
-});
+router.post('/login', async (req, res) => {});
 
 router.post('/register', async (req, res) => {
-  console.log(req.body);
   const {
     email,
     password,
@@ -22,7 +19,7 @@ router.post('/register', async (req, res) => {
   } = req.body;
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  const body = {
+  const user = {
     email: email,
     password: hashedPassword,
     firstname: firstname,
@@ -32,9 +29,8 @@ router.post('/register', async (req, res) => {
     address: address,
     birthdate: birthdate,
   };
-  const user = await UserService.createUser(body);
-  console.log(user);
-  res.send(user);
+  await UserService.createUser(user);
+  res.sendStatus(201);
 });
 
 module.exports = router;
