@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "jest --no-cache"
+    "test": "jest --no-cache",
+    "migrate": "node-pg-migrate"
   },
   "keywords": [],
   "author": "",
