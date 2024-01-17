@@ -7,16 +7,23 @@ class UserService {
     return toCamelCase(rows);
   }
 
+  static async findByEmail(email) {
+    const { rows } = await pool.query('SELECT * FROM users WHERE email = $1', [
+      email,
+    ]);
+    return toCamelCase(rows)[0];
+  }
+
   static async createUser(body) {
     const { rows } = await pool.query(
-      'INSERT INTO users (email, password, firstname, lastname, phone, personalId, address, birthdate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      'INSERT INTO users (email, password, firstname, lastname, phone, personal_id, address, birthdate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
       [
         body.email,
         body.password,
         body.firstname,
         body.lastname,
         body.phone,
-        body.personalId,
+        body.personal_id,
         body.address,
         body.birthdate,
       ]
