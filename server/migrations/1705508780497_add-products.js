@@ -12,8 +12,7 @@ exports.up = (pgm) => {
       name VARCHAR(100) NOT NULL,
       description VARCHAR(400) NOT NULL,
       price INTEGER NOT NULL,
-      address VARCHAR(200) NOT NULL,
-      birthdate DATE NOT NULL
+      image VARCHAR(200)
     );
   `
   );

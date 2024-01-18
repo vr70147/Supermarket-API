@@ -2,25 +2,29 @@ const express = require('express');
 const UserService = require('../services/user-service');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const checkAuth = require('../auth/check-auth');
 const jwt = require('jsonwebtoken');
+const cookieSession = require('cookie-session');
+const uuidv4 = require('uuid').v4;
+const sessions = {};
 
-router.get('/', checkAuth, async (req, res) => {
+const getUsers = async (req, res) => {
   const users = await UserService.find();
+  if (!users) {
+    return res.status(404).send({ error: 'Users not found' });
+  }
   res.send(users);
-});
+};
 
-router.get('/:id', checkAuth, async (req, res) => {
+const getUser = async (req, res) => {
   const { id } = req.params;
   const user = await UserService.findById(id);
   if (!user) {
-    res.sendStatus(404);
+    res.status(404).send({ error: 'User not found' });
   }
   res.send(user);
-});
+};
 
-router.post('/register', async (req, res) => {
-  console.log(req.body);
+const createUser = async (req, res) => {
   const {
     email,
     password,
@@ -31,8 +35,19 @@ router.post('/register', async (req, res) => {
     address,
     birthdate,
   } = req.body;
+  if (
+    !email ||
+    !password ||
+    !firstname ||
+    !lastname ||
+    !phone ||
+    !personal_id
+  ) {
+    return res.status(400).send({ error: 'Missing parameters' });
+  }
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
 
-  const hashedPassword = await bcrypt.hash(password, 10);
   const body = {
     email: email,
     password: hashedPassword,
@@ -44,20 +59,23 @@ router.post('/register', async (req, res) => {
     birthdate: birthdate,
   };
   const user = await UserService.createUser(body);
-  console.log(user);
   res.send(user);
-});
+};
 
-router.post('/login', async (req, res) => {
+const login = async (req, res) => {
   const { email, password } = req.body;
   const user = await UserService.findByEmail(email);
   if (!user) {
-    res.sendStatus(401);
+    return res.status(404).send({ error: 'User not found' });
   }
+  const sessionId = uuidv4();
+  sessions[sessionId] = { email: email, userId: user.id };
+  res.set('Set-Cookie', `session=${sessionId}`);
+  res.sendStatus(200);
 
   const passwordMatch = await bcrypt.compare(password, user.password);
   if (!passwordMatch) {
-    res.sendStatus(401);
+    return res.status(401).send({ error: 'Invalid password' });
   }
   jwt.sign(
     { userId: user.id, email: user.email },
@@ -72,26 +90,35 @@ router.post('/login', async (req, res) => {
       res.json({ token });
     }
   );
-});
+};
 
-router.put('/:id', checkAuth, async (req, res) => {
+const updateUser = async (req, res) => {
   const { id } = req.params;
   const user = await UserService.updateUser(id, req.body);
   if (!user) {
-    res.sendStatus(404);
+    return res.status(404).send({ error: 'User not found' });
   }
   res.send(user);
-});
+};
 
-router.delete('/:id', checkAuth, async (req, res) => {
+const deleteUser = async (req, res) => {
   const { id } = req.params;
   const user = await UserService.deleteUser(id);
   if (!user) {
-    res.sendStatus(404);
+    return res.status(404).send({ error: 'User not found' });
   }
   res.send(user);
-});
+};
 
-router.post('/logout', checkAuth, (req, res) => {});
+// const logout = async (req, res) => {
+//   const { id } = req.body;
+// };
 
-module.exports = router;
+module.exports = {
+  getUsers,
+  getUser,
+  createUser,
+  login,
+  updateUser,
+  deleteUser,
+};

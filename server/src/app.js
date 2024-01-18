@@ -1,10 +1,12 @@
 const express = require('express');
-const UsersRouter = require('./routes/users');
+const UsersRouter = require('./routes/users-route');
 const morgan = require('morgan');
+
 module.exports = () => {
   const app = express();
   app.use(morgan('combined'));
   app.use(express.json());
+
   app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader(

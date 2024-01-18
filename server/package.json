@@ -22,6 +22,7 @@
     "node-pg-migrate": "^6.2.2",
     "pg": "^8.11.3",
     "pg-format": "^1.0.4",
-    "supertest": "^6.3.4"
+    "supertest": "^6.3.4",
+    "uuid": "^9.0.1"
   }
 }

@@ -16,7 +16,7 @@ exports.up = (pgm) => {
 exports.down = (pgm) => {
   pgm.sql(`
     ALTER TABLE carts
-    DROP COLUMN user_id;
+    DROP COLUMN user_id,
     DROP COLUMN product_id;
   `);
 };
