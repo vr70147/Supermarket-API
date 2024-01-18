@@ -9,9 +9,13 @@ const getUser = UsersController.getUser;
 const addUser = UsersController.addUser;
 const updateUser = UsersController.updateUser;
 const deleteUser = UsersController.deleteUser;
+const login = UsersController.login;
 
 router.get('/', isAdmin, isAuth, getUsers);
 router.get('/:id', isAuth, getUser);
-router.post('/', isAuth, addUser);
+router.post('/login', login);
+router.post('/register', addUser);
 router.put('/:id', isAuth, updateUser);
 router.delete('/:id', isAuth, isAdmin, deleteUser);
+
+module.exports = router;

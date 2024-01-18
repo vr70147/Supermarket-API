@@ -9,7 +9,6 @@ exports.up = (pgm) => {
       id SERIAL PRIMARY KEY,
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      role VARCHAR(20) NOT NULL,
       email VARCHAR(200) NOT NULL,
       password VARCHAR(250) NOT NULL,
       firstname VARCHAR(50) NOT NULL,

@@ -24,7 +24,7 @@ const getUser = async (req, res) => {
   res.send(user);
 };
 
-const createUser = async (req, res) => {
+const addUser = async (req, res) => {
   const {
     email,
     password,
@@ -41,7 +41,9 @@ const createUser = async (req, res) => {
     !firstname ||
     !lastname ||
     !phone ||
-    !personal_id
+    !personal_id ||
+    !address ||
+    !birthdate
   ) {
     return res.status(400).send({ error: 'Missing parameters' });
   }
@@ -117,7 +119,7 @@ const deleteUser = async (req, res) => {
 module.exports = {
   getUsers,
   getUser,
-  createUser,
+  addUser,
   login,
   updateUser,
   deleteUser,

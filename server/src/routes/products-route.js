@@ -9,3 +9,5 @@ const deleteProduct = ProductsController.deleteProduct;
 const updateProduct = ProductsController.updateProduct;
 
 router.get('/', getProducts);
+
+module.exports = router;
