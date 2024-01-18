@@ -7,6 +7,13 @@ class UserService {
     return toCamelCase(rows);
   }
 
+  static async findById(id) {
+    const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [
+      id,
+    ]);
+    return toCamelCase(rows)[0];
+  }
+
   static async findByEmail(email) {
     const { rows } = await pool.query('SELECT * FROM users WHERE email = $1', [
       email,
@@ -29,6 +36,36 @@ class UserService {
       ]
     );
     return toCamelCase(rows)[0];
+  }
+
+  static async updateUser(id, body) {
+    const { rows } = await pool.query(
+      'UPDATE users SET email = $1, password = $2, firstname = $3, lastname = $4, phone = $5, personal_id = $6, address = $7, birthdate = $8 WHERE id = $9 RETURNING *',
+      [
+        body.email,
+        body.password,
+        body.firstname,
+        body.lastname,
+        body.phone,
+        body.personal_id,
+        body.address,
+        body.birthdate,
+        id,
+      ]
+    );
+    return toCamelCase(rows)[0];
+  }
+
+  static async deleteUser(id) {
+    const { rows } = await pool.query(
+      'DELETE FROM users WHERE id = $1 RETURNING *',
+      [id]
+    );
+    return toCamelCase(rows)[0];
+  }
+
+  static async login(email, password) {
+    const user = await this.findByEmail(email);
   }
 }
 

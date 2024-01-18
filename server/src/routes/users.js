@@ -10,6 +10,15 @@ router.get('/', checkAuth, async (req, res) => {
   res.send(users);
 });
 
+router.get('/:id', checkAuth, async (req, res) => {
+  const { id } = req.params;
+  const user = await UserService.findById(id);
+  if (!user) {
+    res.sendStatus(404);
+  }
+  res.send(user);
+});
+
 router.post('/register', async (req, res) => {
   console.log(req.body);
   const {
@@ -64,5 +73,25 @@ router.post('/login', async (req, res) => {
     }
   );
 });
+
+router.put('/:id', checkAuth, async (req, res) => {
+  const { id } = req.params;
+  const user = await UserService.updateUser(id, req.body);
+  if (!user) {
+    res.sendStatus(404);
+  }
+  res.send(user);
+});
+
+router.delete('/:id', checkAuth, async (req, res) => {
+  const { id } = req.params;
+  const user = await UserService.deleteUser(id);
+  if (!user) {
+    res.sendStatus(404);
+  }
+  res.send(user);
+});
+
+router.post('/logout', checkAuth, (req, res) => {});
 
 module.exports = router;
