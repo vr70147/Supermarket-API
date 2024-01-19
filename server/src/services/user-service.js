@@ -21,10 +21,11 @@ class UserService {
     return toCamelCase(rows)[0];
   }
 
-  static async createUser(body) {
+  static async addUser(body) {
     const { rows } = await pool.query(
       'INSERT INTO users (email, password, firstname, lastname, phone, personal_id, address, birthdate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
       [
+        body.role,
         body.email,
         body.password,
         body.firstname,

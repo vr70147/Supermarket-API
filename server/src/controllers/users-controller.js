@@ -1,12 +1,13 @@
 const express = require('express');
 const UserService = require('../services/user-service');
-const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const cookieSession = require('cookie-session');
 const uuidv4 = require('uuid').v4;
-const sessions = {};
+const session = require('express-session');
 
+const whoAmI = (req, res) => {
+  res.send(req.session);
+};
 const getUsers = async (req, res) => {
   const users = await UserService.find();
   if (!users) {
@@ -16,10 +17,10 @@ const getUsers = async (req, res) => {
 };
 
 const getUser = async (req, res) => {
-  const { id } = req.params;
+  const id = req.params;
   const user = await UserService.findById(id);
   if (!user) {
-    res.status(404).send({ error: 'User not found' });
+    return res.status(404).send({ error: 'User not found' });
   }
   res.send(user);
 };
@@ -51,6 +52,7 @@ const addUser = async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, salt);
 
   const body = {
+    role: 'user',
     email: email,
     password: hashedPassword,
     firstname: firstname,
@@ -60,7 +62,48 @@ const addUser = async (req, res) => {
     address: address,
     birthdate: birthdate,
   };
-  const user = await UserService.createUser(body);
+  const user = await UserService.addUser(body);
+  res.send(user);
+};
+
+const addAdmin = async (req, res) => {
+  const {
+    email,
+    password,
+    firstname,
+    lastname,
+    phone,
+    personal_id,
+    address,
+    birthdate,
+  } = req.body;
+  if (
+    !email ||
+    !password ||
+    !firstname ||
+    !lastname ||
+    !phone ||
+    !personal_id ||
+    !address ||
+    !birthdate
+  ) {
+    return res.status(400).send({ error: 'Missing parameters' });
+  }
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  const body = {
+    role: 'admin',
+    email: email,
+    password: hashedPassword,
+    firstname: firstname,
+    lastname: lastname,
+    phone: phone,
+    personal_id: personal_id,
+    address: address,
+    birthdate: birthdate,
+  };
+  const user = await UserService.addUser(body);
   res.send(user);
 };
 
@@ -70,15 +113,13 @@ const login = async (req, res) => {
   if (!user) {
     return res.status(404).send({ error: 'User not found' });
   }
-  const sessionId = uuidv4();
-  sessions[sessionId] = { email: email, userId: user.id };
-  res.set('Set-Cookie', `session=${sessionId}`);
-  res.sendStatus(200);
-
   const passwordMatch = await bcrypt.compare(password, user.password);
   if (!passwordMatch) {
     return res.status(401).send({ error: 'Invalid password' });
   }
+  req.session.user = user;
+  req.session.id = uuidv4();
+  req.session.authorized = true;
   jwt.sign(
     { userId: user.id, email: user.email },
     process.env.JWT_KEY,
@@ -87,7 +128,7 @@ const login = async (req, res) => {
     },
     (err, token) => {
       if (err) {
-        res.sendStatus(500);
+        return res.status(500).send(err);
       }
       res.json({ token });
     }
@@ -112,15 +153,19 @@ const deleteUser = async (req, res) => {
   res.send(user);
 };
 
-// const logout = async (req, res) => {
-//   const { id } = req.body;
-// };
+const logout = async (req, res) => {
+  req.session.destroy();
+  res.send({ message: 'Logged out successfully' });
+};
 
 module.exports = {
+  whoAmI,
   getUsers,
   getUser,
   addUser,
+  addAdmin,
   login,
   updateUser,
   deleteUser,
+  logout,
 };
