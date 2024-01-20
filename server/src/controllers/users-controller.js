@@ -6,12 +6,17 @@ const uuidv4 = require('uuid').v4;
 const session = require('express-session');
 
 const whoAmI = (req, res) => {
+  //Check if user is logged in
   res.send(req.session);
 };
 const getUsers = async (req, res) => {
-  const users = await UserService.find();
+  const query = req.params;
+  if (!query) {
+    return res.status(400).send({ error: 'Missing parameters' });
+  }
+  const users = await UserService.find(query.pageNumber, query.pageSize);
   if (!users) {
-    return res.status(404).send({ error: 'Users not found' });
+    return null;
   }
   res.send(users);
 };
@@ -48,6 +53,11 @@ const addUser = async (req, res) => {
   ) {
     return res.status(400).send({ error: 'Missing parameters' });
   }
+
+  //Check if user already exists
+  const user = await UserService.findByEmail(req.body.email);
+  if (user) return res.status(409).send({ error: 'User already exists' });
+
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -62,8 +72,8 @@ const addUser = async (req, res) => {
     address: address,
     birthdate: birthdate,
   };
-  const user = await UserService.addUser(body);
-  res.send(user);
+  const createUser = await UserService.addUser(body);
+  res.send(createUser);
 };
 
 const addAdmin = async (req, res) => {
@@ -89,9 +99,15 @@ const addAdmin = async (req, res) => {
   ) {
     return res.status(400).send({ error: 'Missing parameters' });
   }
+  //Check if user already exists
+  const user = await UserService.findByEmail(req.body.email);
+  if (user) return res.status(409).send({ error: 'User already exists' });
+
+  //Hash password
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
+  //Create user
   const body = {
     role: 'admin',
     email: email,
@@ -103,8 +119,8 @@ const addAdmin = async (req, res) => {
     address: address,
     birthdate: birthdate,
   };
-  const user = await UserService.addUser(body);
-  res.send(user);
+  const createAdmin = await UserService.addUser(body);
+  res.send(createAdmin);
 };
 
 const login = async (req, res) => {
