@@ -11,16 +11,16 @@ const updateUser = UsersController.updateUser;
 const deleteUser = UsersController.deleteUser;
 const login = UsersController.login;
 const logout = UsersController.logout;
-const whoami = UsersController.whoAmI;
 const addAdmin = UsersController.addAdmin;
+const refreshToken = UsersController.refreshToken;
 
-router.get('/', isAuth, getUsers);
 router.get('/:id', isAuth, getUser);
-router.get('/whoami', whoami);
+router.get('/', isAuth, isAdmin, getUsers);
+router.post('/token', refreshToken);
 router.post('/login', login);
+router.delete('/logout', logout);
 router.post('/register', addUser);
-router.post('admin/register', addAdmin);
-router.post('/logout', isAuth, logout);
+router.post('/admin/register', addAdmin);
 router.put('/:id', isAuth, updateUser);
 router.delete('/:id', isAuth, deleteUser);
 

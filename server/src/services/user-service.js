@@ -3,10 +3,12 @@ const toCamelCase = require('./utils/to-camel-case');
 
 class UserService {
   static async find(pageNumber, pageSize) {
+    const where = `WHERE role = 'user' AND WHERE email = 'raanan@gmail.com'`;
     const { rows } = await pool.query(
       `SELECT
       created_at, firstname, lastname, email, role, phone, address, birthdate
       FROM users
+      ${where}
       ORDER BY "users"."id"
       LIMIT $2
       OFFSET (($1 - 1) * $2);
@@ -16,11 +18,20 @@ class UserService {
     return toCamelCase(rows);
   }
 
-  static async findById(id) {
-    const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [
-      id,
-    ]);
+  static async findById({ id }) {
+    const { rows } = await pool.query(
+      'SELECT created_at, role, email, firstname, lastname, phone, address, birthdate FROM users WHERE id = $1',
+      [id]
+    );
     return toCamelCase(rows)[0];
+  }
+
+  static async findToken(token) {
+    const { rows } = await pool.query(
+      'SELECT token FROM tokens WHERE token = $1',
+      [token]
+    );
+    return rows;
   }
 
   static async findByEmail(email) {
@@ -29,6 +40,14 @@ class UserService {
     ]);
     if (!rows) return res.status(404).send({ error: 'User not found' });
     return toCamelCase(rows)[0];
+  }
+
+  static async addToken(token) {
+    const { rows } = await pool.query(
+      'INSERT INTO tokens (token) VALUES ($1) RETURNING *',
+      [token]
+    );
+    return rows;
   }
 
   static async addUser(body) {
@@ -73,6 +92,14 @@ class UserService {
       [id]
     );
     return toCamelCase(rows)[0];
+  }
+
+  static async deleteToken(token) {
+    const { rows } = await pool.query(
+      'DELETE FROM tokens WHERE token = $1 RETURNING token',
+      [token]
+    );
+    return rows;
   }
 }
 

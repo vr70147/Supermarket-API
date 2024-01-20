@@ -1,14 +1,9 @@
-const express = require('express');
 const UserService = require('../services/user-service');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const uuidv4 = require('uuid').v4;
-const session = require('express-session');
+const { generateAccessToken } = require('../auth/jwt-helper');
+require('dotenv').config();
 
-const whoAmI = (req, res) => {
-  //Check if user is logged in
-  res.send(req.session);
-};
 const getUsers = async (req, res) => {
   const query = req.params;
   if (!query) {
@@ -77,6 +72,7 @@ const addUser = async (req, res) => {
 };
 
 const addAdmin = async (req, res) => {
+  console.log(req.body);
   const {
     email,
     password,
@@ -119,8 +115,9 @@ const addAdmin = async (req, res) => {
     address: address,
     birthdate: birthdate,
   };
+  //add user to database
   const createAdmin = await UserService.addUser(body);
-  res.send(createAdmin);
+  res.send([createAdmin]);
 };
 
 const login = async (req, res) => {
@@ -133,22 +130,19 @@ const login = async (req, res) => {
   if (!passwordMatch) {
     return res.status(401).send({ error: 'Invalid password' });
   }
-  req.session.user = user;
-  req.session.id = uuidv4();
-  req.session.authorized = true;
-  jwt.sign(
-    { userId: user.id, email: user.email },
-    process.env.JWT_KEY,
-    {
-      expiresIn: '1h',
-    },
-    (err, token) => {
-      if (err) {
-        return res.status(500).send(err);
-      }
-      res.json({ token });
-    }
+  const dataToSendToken = { userId: user.id, email: user.email };
+  const accessToken = generateAccessToken(dataToSendToken);
+  const refreshToken = jwt.sign(
+    dataToSendToken,
+    process.env.REFRESH_TOKEN_SECRET
   );
+  const createToken = await UserService.addToken(refreshToken);
+  res.json({ accessToken: accessToken, refreshToken: refreshToken });
+};
+
+const logout = async (req, res) => {
+  await UserService.deleteToken(req.body.token);
+  return res.status(204).send();
 };
 
 const updateUser = async (req, res) => {
@@ -169,19 +163,52 @@ const deleteUser = async (req, res) => {
   res.send(user);
 };
 
-const logout = async (req, res) => {
-  req.session.destroy();
-  res.send({ message: 'Logged out successfully' });
+const refreshToken = async (req, res) => {
+  //Get refresh token from client
+  const refreshToken = req.body.token;
+  if (refreshToken == null) {
+    return res.status(401).send({ error: 'Refresh token not provided' });
+  }
+
+  //check refresh token in db
+  const checkRefreshToken = await UserService.findToken(refreshToken);
+
+  if (checkRefreshToken == {} || checkRefreshToken.length == 0) {
+    return res.status(403).send({ error: 'Invalid refresh token' });
+  }
+
+  //Verify refresh token
+  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).send({ error: 'Invalid refresh token' });
+    }
+    const accessToken = generateAccessToken({
+      userId: user.userId,
+      email: user.email,
+    });
+    res.json({ accessToken: accessToken });
+  });
+};
+
+const addToken = async (req, res) => {
+  const { id } = req.params;
+  const { token } = req.body;
+  const userToken = await UserService.addToken(id, token);
+  if (!user) {
+    return res.status(409).send({ error: 'Token already exists' });
+  }
+  res.send(userToken);
 };
 
 module.exports = {
-  whoAmI,
+  addToken,
+  refreshToken,
   getUsers,
   getUser,
   addUser,
   addAdmin,
   login,
+  logout,
   updateUser,
   deleteUser,
-  logout,
 };

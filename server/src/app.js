@@ -1,26 +1,11 @@
 const express = require('express');
 const UsersRouter = require('./routes/users-route');
 const morgan = require('morgan');
-const cookieParser = require('cookie-parser');
-const session = require('express-session');
 
 module.exports = () => {
   const app = express();
   app.use(morgan('combined'));
   app.use(express.urlencoded({ extended: true }));
-  app.use(cookieParser());
-  app.use(
-    session({
-      secret: process.env.SESSION_SECRET,
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        maxAge: 1000 * 60 * 60 * 24,
-        httpOnly: true,
-        secure: true,
-      },
-    })
-  );
   app.use(express.json());
   app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
