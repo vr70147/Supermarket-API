@@ -19,6 +19,8 @@ module.exports = () => {
     );
     next();
   });
+  app.use('/products', ProductsRouter);
+  app.use('/carts', CartsRouter);
   app.use('/users', UsersRouter);
   return app;
 };
