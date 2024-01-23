@@ -1,7 +1,7 @@
 const pool = require('../pool');
 const toCamelCase = require('./utils/to-camel-case');
 
-class ProductService {
+class ProductsService {
   static async find() {
     const { rows } = await pool.query('SELECT * FROM products;');
     if (!rows) return null;
@@ -36,11 +36,31 @@ class ProductService {
     return toCamelCase(rows)[0];
   }
 
-  static async delete(id) {
+  static async deleteProduct({ id }) {
     const { rows } = await pool.query(
-      'DELETE FROM products WHERE id = $1 RETURNING *'
+      'DELETE FROM products WHERE id = $1 RETURNING *',
+      [id]
     );
     if (!rows) throw new Error('Product not found');
     return toCamelCase(rows)[0];
   }
+
+  static async addProduct(body) {
+    const { name, price, description } = body;
+    if (!name || !price || !description) return null;
+    const { rows } = await pool.query(
+      'INSERT INTO products (name, price, description, image, brand, category_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;',
+      [
+        body.name,
+        body.price,
+        body.description,
+        body.image,
+        body.brand,
+        body.category_id,
+      ]
+    );
+    return toCamelCase(rows)[0];
+  }
 }
+
+module.exports = ProductsService;

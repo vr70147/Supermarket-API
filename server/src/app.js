@@ -1,5 +1,8 @@
 const express = require('express');
 const UsersRouter = require('./routes/users-route');
+const CartsRouter = require('./routes/carts-route');
+const ProductsRouter = require('./routes/products-route');
+const CategoriesRouter = require('./routes/categories-route');
 const morgan = require('morgan');
 
 module.exports = () => {
@@ -22,5 +25,6 @@ module.exports = () => {
   app.use('/products', ProductsRouter);
   app.use('/carts', CartsRouter);
   app.use('/users', UsersRouter);
+  app.use('/category', CategoriesRouter);
   return app;
 };

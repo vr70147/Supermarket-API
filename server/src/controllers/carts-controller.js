@@ -26,7 +26,7 @@ const getCartItems = async (req, res) => {
   if (!cart) {
     return res.status(404).send({ error: 'Cart not found' });
   }
-  res.send(cart.items);
+  res.send(cart);
 };
 
 const addCartItem = async (req, res) => {
