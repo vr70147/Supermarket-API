@@ -1,6 +1,7 @@
 const CartsService = require('../services/carts-service');
+
 const getCarts = async (req, res) => {
-  const query = req.params;
+  const { query } = req.params;
   if (!query) {
     return res.status(400).send({ error: 'Missing parameters' });
   }
@@ -12,7 +13,7 @@ const getCarts = async (req, res) => {
 };
 
 const getCart = async (req, res) => {
-  const id = req.params;
+  const { id } = req.params;
   const cart = await CartsService.findById(id);
   if (!cart) {
     return res.status(404).send({ error: 'Cart not found' });
@@ -21,8 +22,8 @@ const getCart = async (req, res) => {
 };
 
 const getCartItems = async (req, res) => {
-  const id = req.params;
-  const cart = await CartsService.findById(id);
+  const { id } = req.params;
+  const cart = await CartsService.getAllItems(id);
   if (!cart) {
     return res.status(404).send({ error: 'Cart not found' });
   }
@@ -30,9 +31,8 @@ const getCartItems = async (req, res) => {
 };
 
 const addCartItem = async (req, res) => {
-  const id = req.params;
-  const qty = req.body;
-  const cart = await CartsService.addItemToCart(id, qty);
+  const { id } = req.params;
+  const cart = await CartsService.addItemToCart(id, req.body);
   if (!cart) {
     return res.status(404).send({ error: 'Cart not found' });
   }
@@ -40,7 +40,7 @@ const addCartItem = async (req, res) => {
 };
 
 const deleteCart = async (req, res) => {
-  const id = req.params;
+  const { id } = req.params;
   const cart = await CartsService.deleteCart(id);
   if (!cart) {
     return res.status(404).send({ error: 'Cart not found' });
@@ -49,7 +49,7 @@ const deleteCart = async (req, res) => {
 };
 
 const deleteCartItem = async (req, res) => {
-  const id = req.params;
+  const { id } = req.params;
   const cart = await CartsService.deleteItemFromCart(id);
   if (!cart) {
     return res.status(404).send({ error: 'Cart not found' });
@@ -58,7 +58,7 @@ const deleteCartItem = async (req, res) => {
 };
 
 const deleteAllItems = async (req, res) => {
-  const id = req.params;
+  const { id } = req.params;
   const cart = await CartsService.deleteAllItems(id);
   if (!cart) {
     return res.status(404).send({ error: 'Cart not found' });
@@ -67,11 +67,10 @@ const deleteAllItems = async (req, res) => {
 };
 
 const addCart = async (req, res) => {
-  const checkCart = await CartsService.findByUserId(req.body.userId);
-  if (checkCart) {
+  const cart = await CartsService.addCart(req.body);
+  if (!cart) {
     return res.status(409).send({ error: 'Cart already exists' });
   }
-  const cart = await CartsService.addCart(req.body);
   res.send(cart);
 };
 

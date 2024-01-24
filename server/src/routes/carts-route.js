@@ -13,11 +13,11 @@ const getCartItems = CartsController.getCartItems;
 
 router.get('/:id', isAuth, getCart);
 router.get('/', isAuth, getCarts);
-router.post('/', isAuth, addCart);
+router.post('/', addCart);
 router.delete('/:id', isAuth, deleteCart);
-router.post('/:id/items', isAuth, addCartItem);
+router.post('/:id', addCartItem);
 router.delete('/:id/items/:itemId', isAuth, deleteCartItem);
 router.delete('/:id/items', isAuth, deleteAllItems);
-router.get('/:id/items', isAuth, getCartItems);
+router.get('/:id/items', getCartItems);
 
 module.exports = router;
