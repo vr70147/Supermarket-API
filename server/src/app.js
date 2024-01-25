@@ -3,6 +3,7 @@ const UsersRouter = require('./routes/users-route');
 const CartsRouter = require('./routes/carts-route');
 const ProductsRouter = require('./routes/products-route');
 const CategoriesRouter = require('./routes/categories-route');
+const OrdersRouter = require('./routes/orders-route');
 const morgan = require('morgan');
 
 module.exports = () => {
@@ -26,5 +27,6 @@ module.exports = () => {
   app.use('/carts', CartsRouter);
   app.use('/users', UsersRouter);
   app.use('/category', CategoriesRouter);
+  app.use('/orders', OrdersRouter);
   return app;
 };
