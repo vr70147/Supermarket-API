@@ -1,18 +1,18 @@
-const productsService = require('../services/products-service');
+const ProductService = require('../services/products-service');
 
 const getProducts = async (req, res) => {
-  const products = await productsService.find();
+  const products = await ProductService.find();
   res.json(products);
 };
 
 const addProduct = async (req, res) => {
-  const product = await productsService.addProduct(req.body);
+  const product = await ProductService.addProduct(req.body);
   res.status(201).json(product);
 };
 
 const deleteProduct = async (req, res) => {
   const id = req.params;
-  const product = await productsService.deleteProduct(id);
+  const product = await ProductService.deleteProduct(id);
   if (!product) {
     return res.status(404).send({ error: 'Product not found' });
   }
@@ -21,7 +21,7 @@ const deleteProduct = async (req, res) => {
 
 const updateProduct = async (req, res) => {
   const id = req.params;
-  const product = await productsService.updateProduct(id, req.body);
+  const product = await ProductService.updateProduct(id, req.body);
   if (!product) {
     return res.status(404).send({ error: 'Product not found' });
   }
@@ -30,7 +30,7 @@ const updateProduct = async (req, res) => {
 
 const getProduct = async (req, res) => {
   const id = req.params;
-  const product = await productsService.findById(id);
+  const product = await ProductService.findById(id);
   if (!product) {
     return res.status(404).send({ error: 'Product not found' });
   }
@@ -39,7 +39,7 @@ const getProduct = async (req, res) => {
 
 const getProductsByFilter = async (req, res) => {
   const query = req.params;
-  const products = await productsService.findByFilter(query);
+  const products = await ProductService.findByFilter(query);
   if (!products) {
     return res.status(404).send({ error: 'Product not found' });
   }

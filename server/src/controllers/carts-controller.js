@@ -67,7 +67,7 @@ const deleteAllItems = async (req, res) => {
 };
 
 const addCart = async (req, res) => {
-  const cart = await CartsService.addCart(req.body);
+  const cart = await CartsService.addCart(req.body.id);
   if (!cart) {
     return res.status(409).send({ error: 'Cart already exists' });
   }

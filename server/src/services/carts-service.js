@@ -47,9 +47,8 @@ class CartsService {
     return toCamelCase(rows)[0];
   }
 
-  static async addCart(body) {
-    const { userId } = body;
-    console.log(userId);
+  static async addCart(id) {
+    const userId = id;
     const { rows } = await pool.query(
       'INSERT INTO carts (user_id) VALUES ($1) RETURNING *',
       [userId]
@@ -102,6 +101,17 @@ class CartsService {
     );
     if (!rows) throw new Error('Cart items not found');
     return toCamelCase(rows);
+  }
+
+  static async checkCartExists(id) {
+    const { rows } = await pool.query(
+      `SELECT *
+      FROM carts
+      WHERE user_id = $1`,
+      [id]
+    );
+    if (rows.length === 0) return false;
+    return rows;
   }
 }
 

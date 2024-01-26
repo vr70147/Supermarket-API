@@ -1,4 +1,5 @@
 const UserService = require('../services/user-service');
+const CartsService = require('../services/carts-service');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { generateAccessToken } = require('../auth/jwt-helper');
@@ -72,7 +73,6 @@ const addUser = async (req, res) => {
 };
 
 const addAdmin = async (req, res) => {
-  console.log(req.body);
   const {
     email,
     password,
@@ -137,6 +137,14 @@ const login = async (req, res) => {
     process.env.REFRESH_TOKEN_SECRET
   );
   const createToken = await UserService.addToken(refreshToken);
+  if (!createToken) {
+    return res.status(500).send({ error: 'Failed to create token' });
+  }
+  const userId = user.id;
+  const checkCartExists = await CartsService.checkCartExists(userId);
+  if (!checkCartExists) {
+    await CartsService.addCart(userId);
+  }
   res.json({ accessToken: accessToken, refreshToken: refreshToken });
 };
 
