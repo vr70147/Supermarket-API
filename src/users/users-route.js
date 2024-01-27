@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const isAuth = require('../middlewares/auth-middleware');
-const isAdmin = require('../middlewares/admin-guard');
+const isAdmin = require('../middlewares/admin-middleware');
 const UsersController = require('./users-controller');
 
 const getUsers = UsersController.getUsers;
