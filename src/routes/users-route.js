@@ -12,7 +12,7 @@ const deleteUser = UsersController.deleteUser;
 const login = UsersController.login;
 const logout = UsersController.logout;
 const addAdmin = UsersController.addAdmin;
-const refreshToken = UsersController.refreshToken;
+const refreshToken = UsersController.checkRefreshToken;
 
 router.get('/:id', isAuth, getUser);
 router.get('/', isAuth, isAdmin, getUsers);

@@ -122,30 +122,11 @@ const addAdmin = async (req, res) => {
 
 const login = async (req, res) => {
   const { email, password } = req.body;
-  const user = await UserService.findByEmail(email);
+  const user = await UserService.loginUser({ email, password });
   if (!user) {
-    return res.status(404).send({ error: 'User not found' });
+    return res.status(401).send({ error: 'Invalid credentials' });
   }
-  const passwordMatch = await bcrypt.compare(password, user.password);
-  if (!passwordMatch) {
-    return res.status(401).send({ error: 'Invalid password' });
-  }
-  const dataToSendToken = { userId: user.id, email: user.email };
-  const accessToken = generateAccessToken(dataToSendToken);
-  const refreshToken = jwt.sign(
-    dataToSendToken,
-    process.env.REFRESH_TOKEN_SECRET
-  );
-  const createToken = await UserService.addToken(refreshToken);
-  if (!createToken) {
-    return res.status(500).send({ error: 'Failed to create token' });
-  }
-  const userId = user.id;
-  const checkCartExists = await CartsService.checkCartExists(userId);
-  if (!checkCartExists) {
-    await CartsService.addCart(userId);
-  }
-  res.json({ accessToken: accessToken, refreshToken: refreshToken });
+  res.json(user);
 };
 
 const logout = async (req, res) => {
@@ -171,7 +152,7 @@ const deleteUser = async (req, res) => {
   res.send(user);
 };
 
-const refreshToken = async (req, res) => {
+const checkRefreshToken = async (req, res) => {
   //Get refresh token from client
   const refreshToken = req.body.token;
   if (refreshToken == null) {
@@ -179,9 +160,12 @@ const refreshToken = async (req, res) => {
   }
 
   //check refresh token in db
-  const checkRefreshToken = await UserService.findToken(refreshToken);
+  const checkRefreshToken = await UserService.pool.query(
+    'SELECT token FROM tokens WHERE token = $1',
+    [token]
+  );
 
-  if (checkRefreshToken == {} || checkRefreshToken.length == 0) {
+  if (checkRefreshToken.length == 0) {
     return res.status(403).send({ error: 'Invalid refresh token' });
   }
 
@@ -190,18 +174,22 @@ const refreshToken = async (req, res) => {
     if (err) {
       return res.status(403).send({ error: 'Invalid refresh token' });
     }
-    const accessToken = generateAccessToken({
-      userId: user.userId,
-      email: user.email,
-    });
+    const dataToSendToken = { userId: user.id, email: user.email };
+    const accessToken = jwt.sign(
+      dataToSendToken,
+      process.env.ACCESS_TOKEN_SECRET,
+      {
+        expiresIn: '24h',
+      }
+    );
     res.json({ accessToken: accessToken });
   });
 };
 
-const addToken = async (req, res) => {
+const addRefreshToken = async (req, res) => {
   const { id } = req.params;
   const { token } = req.body;
-  const userToken = await UserService.addToken(id, token);
+  const userToken = await UserService.addRefreshToken(id, token);
   if (!user) {
     return res.status(409).send({ error: 'Token already exists' });
   }
@@ -209,8 +197,8 @@ const addToken = async (req, res) => {
 };
 
 module.exports = {
-  addToken,
-  refreshToken,
+  addRefreshToken,
+  checkRefreshToken,
   getUsers,
   getUser,
   addUser,
