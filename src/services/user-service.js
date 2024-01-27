@@ -1,13 +1,17 @@
 const pool = require('../pool');
 const toCamelCase = require('./utils/to-camel-case');
+const CartsService = require('../services/carts-service');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 class UserService {
   constructor(pool) {
     this.pool = pool;
   }
 
-  static async loginUser({ email, password }) {
-    const user = await this.find(email);
+  async loginUser(email, password) {
+    const user = await this.findByEmail(email);
     if (!user) {
       throw new Error({ error: 'User not found' });
     }
@@ -27,7 +31,10 @@ class UserService {
       dataToSendToken,
       process.env.REFRESH_TOKEN_SECRET
     );
-    const createToken = await this.addToken(refreshToken);
+    const createToken = await this.pool.query(
+      'INSERT INTO tokens (token) VALUES ($1) RETURNING *',
+      [refreshToken]
+    );
     if (!createToken) {
       throw new Error({ error: 'Failed to create token' });
     }
@@ -39,13 +46,12 @@ class UserService {
     return { accessToken: accessToken, refreshToken: refreshToken };
   }
 
-  static async find(pageNumber, pageSize) {
-    const where = `WHERE role = 'user' AND WHERE email = 'raanan@gmail.com'`;
-    const { rows } = await pool.query(
+  async find(pageNumber, pageSize) {
+    const { rows } = await this.pool.query(
       `SELECT
       created_at, firstname, lastname, email, role, phone, address, birthdate
       FROM users
-      ${where}
+      WHERE role = 'user'
       ORDER BY "users"."id"
       LIMIT $2
       OFFSET (($1 - 1) * $2);
@@ -55,7 +61,7 @@ class UserService {
     return toCamelCase(rows);
   }
 
-  static async findById({ id }) {
+  async findById({ id }) {
     const { rows } = await pool.query(
       'SELECT created_at, role, email, firstname, lastname, phone, address, birthdate FROM users WHERE id = $1',
       [id]
@@ -63,7 +69,7 @@ class UserService {
     return toCamelCase(rows)[0];
   }
 
-  static async findByEmail(email) {
+  async findByEmail(email) {
     const { rows } = await pool.query('SELECT * FROM users WHERE email = $1', [
       email,
     ]);
@@ -71,64 +77,66 @@ class UserService {
     return toCamelCase(rows)[0];
   }
 
-  static async addRefreshToken(token) {
-    const { rows } = await pool.query(
-      'INSERT INTO tokens (token) VALUES ($1) RETURNING *',
-      [token]
-    );
-    return rows;
-  }
+  async addUser(body) {
+    let payload = {};
+    for (const [key, value] of Object.entries(body)) {
+      if (!value) throw new Error({ error: 'Missing parameters' });
+      payload[key] = value;
+    }
+    //Check if user already exists
+    const user = await this.findByEmail(payload.email);
+    if (user) throw new Error({ error: 'User already exists' });
 
-  static async addUser(body) {
-    const { rows } = await pool.query(
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const { rows } = await this.pool.query(
       'INSERT INTO users (role, email, password, firstname, lastname, phone, personal_id, address, birthdate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING role, email, firstname, lastname, phone, address, birthdate',
       [
-        body.role,
-        body.email,
-        body.password,
-        body.firstname,
-        body.lastname,
-        body.phone,
-        body.personal_id,
-        body.address,
-        body.birthdate,
+        payload.role,
+        payload.email,
+        hashedPassword,
+        payload.firstname,
+        payload.lastname,
+        payload.phone,
+        payload.personal_id,
+        payload.address,
+        payload.birthdate,
       ]
     );
     return toCamelCase(rows)[0];
   }
 
-  static async updateUser(id, body) {
-    const { rows } = await pool.query(
-      'UPDATE users SET email = $1, password = $2, firstname = $3, lastname = $4, phone = $5, personal_id = $6, address = $7, birthdate = $8 WHERE id = $9 RETURNING email, firstname, lastname, phone, address, birthdate',
-      [
-        body.email,
-        body.password,
-        body.firstname,
-        body.lastname,
-        body.phone,
-        body.personal_id,
-        body.address,
-        body.birthdate,
-        id,
-      ]
-    );
-    return toCamelCase(rows)[0];
-  }
+  async checkRefreshToken(refreshToken) {
+    if (refreshToken == null) {
+      throw new Error({ error: 'Refresh token not provided' });
+    }
 
-  static async deleteUser(id) {
-    const { rows } = await pool.query(
-      'DELETE FROM users WHERE id = $1 RETURNING email, firstname',
-      [id]
-    );
-    return toCamelCase(rows)[0];
-  }
-
-  static async deleteToken(token) {
-    const { rows } = await pool.query(
-      'DELETE FROM tokens WHERE token = $1 RETURNING token',
+    //check refresh token in db
+    const checkRefreshToken = await UserService.pool.query(
+      'SELECT token FROM tokens WHERE token = $1',
       [token]
     );
-    return rows;
+
+    if (checkRefreshToken.length == 0) {
+      throw new Error({ error: 'Invalid refresh token' });
+    }
+
+    //Verify refresh token
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+      if (err) {
+        throw new Error({ error: 'Invalid refresh token' });
+      }
+      const dataToSendToken = { userId: user.id, email: user.email };
+      const accessToken = jwt.sign(
+        dataToSendToken,
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+          expiresIn: '24h',
+        }
+      );
+      return { accessToken: accessToken };
+    });
   }
 }
 
