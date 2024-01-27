@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const CategoriesController = require('./categories-controller');
-const checkAuth = require('../auth/auth-guard');
+const checkAuth = require('../middlewares/auth-middleware');
 
 const getCategories = CategoriesController.getCategories;
 const getCategoriesById = CategoriesController.getCategoriesById;

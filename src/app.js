@@ -1,9 +1,9 @@
 const express = require('express');
-const UsersRouter = require('./routes/users-route');
-const CartsRouter = require('./routes/carts-route');
-const ProductsRouter = require('./routes/products-route');
-const CategoriesRouter = require('./routes/categories-route');
-const OrdersRouter = require('./routes/orders-route');
+const UsersRouter = require('./users/users-route');
+const CartsRouter = require('./carts/carts-route');
+const ProductsRouter = require('./products/products-route');
+const CategoriesRouter = require('./categories/categories-route');
+const OrdersRouter = require('./orders/orders-route');
 const morgan = require('morgan');
 
 module.exports = () => {
