@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const CategoriesController = require('../controllers/categories-controller');
+const CategoriesController = require('./categories-controller');
 const checkAuth = require('../auth/auth-guard');
 
 const getCategories = CategoriesController.getCategories;

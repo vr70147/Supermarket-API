@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const ProductsController = require('../controllers/products-controller');
-const checkAuth = require('../auth/auth-guard');
+const ProductsController = require('./products-controller');
+const checkAuth = require('../middlewares/auth-middleware');
 
 const getProducts = ProductsController.getProducts;
 const addProduct = ProductsController.addProduct;

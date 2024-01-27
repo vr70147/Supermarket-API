@@ -1,5 +1,5 @@
 const pool = require('../pool');
-const toCamelCase = require('./utils/to-camel-case');
+const toCamelCase = require('../utils/to-camel-case');
 
 class OrdersService {
   static async find(pageNumber, pageSize) {

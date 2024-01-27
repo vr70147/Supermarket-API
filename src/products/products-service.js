@@ -1,5 +1,5 @@
 const pool = require('../pool');
-const toCamelCase = require('./utils/to-camel-case');
+const toCamelCase = require('../utils/to-camel-case');
 
 class ProductsService {
   static async find() {

@@ -1,5 +1,5 @@
 const pool = require('../pool');
-const toCamelCase = require('./utils/to-camel-case');
+const toCamelCase = require('../utils/to-camel-case');
 class CartsService {
   static async find(pageNumber, pageSize) {
     const { rows } = await pool.query(

@@ -1,6 +1,6 @@
 const pool = require('../pool');
 
-const isAdmin = async (req, res, next) => {
+const checkPermission = async (req, res, next) => {
   const { rows } = await pool.query(
     'SELECT * FROM users WHERE id = $1 AND role = $2',
     [req.user.id, 'admin']
@@ -11,4 +11,4 @@ const isAdmin = async (req, res, next) => {
   }
 };
 
-module.exports = isAdmin;
+module.exports = checkPermission;

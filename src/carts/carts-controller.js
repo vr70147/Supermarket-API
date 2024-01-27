@@ -1,4 +1,4 @@
-const CartsService = require('../services/carts-service');
+const CartsService = require('./carts-service');
 
 const getCarts = async (req, res) => {
   const { query } = req.params;

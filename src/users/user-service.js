@@ -1,6 +1,6 @@
 const pool = require('../pool');
-const toCamelCase = require('./utils/to-camel-case');
-const CartsService = require('../services/carts-service');
+const toCamelCase = require('../utils/to-camel-case');
+const CartsService = require('../carts/carts-service');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();

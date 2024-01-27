@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
-const UserService = require('../services/user-service');
 
-const isAuth = async (req, res, next) => {
+const checkAuth = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
   if (token == null) return res.status(401).json({ message: 'Auth failed!' });
@@ -13,4 +12,4 @@ const isAuth = async (req, res, next) => {
   });
 };
 
-module.exports = isAuth;
+module.exports = checkAuth;
