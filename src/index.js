@@ -1,18 +1,18 @@
-const app = require('./src/app');
-const pool = require('./src/pool');
+const app = require('./app');
+const pool = require('./pool');
 
 require('dotenv').config();
 
 pool
   .connect({
     host: 'localhost',
-    port: 5432,
+    port: process.env.PG_PORT,
     database: 'store',
     user: process.env.PG_USER,
     password: process.env.PG_PASS,
   })
   .then(() => {
-    app().listen(3005, () => {
+    app().listen(process.env.PORT, () => {
       console.log('Server running on port 3005');
     });
   })

@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js",
+    "start": "nodemon ./src/index.js",
     "test": "jest --no-cache",
-    "migrate": "node-pg-migrate"
+    "migrate": "node-pg-migrate -m ./src/migrations/"
   },
   "keywords": [],
   "author": "",
