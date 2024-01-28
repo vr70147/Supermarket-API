@@ -1,30 +1,46 @@
 const CategoriesService = require('./categories-service');
 
 const getCategories = async (req, res) => {
-  const categories = await CategoriesService.find();
-  if (!categories) return null;
-  res.json(categories);
-};
-
-const getCategoriesById = async (req, res) => {
-  const { id } = req.params;
-  const category = await CategoriesService.findById(id);
-  if (!category) return null;
+  if (!req.body || !req.query) {
+    return res.status(400).send({ error: 'Missing parameters' });
+  }
+  const category = await CategoriesService.find(
+    req.query.pageNumber,
+    req.query.pageSize,
+    req.body.where,
+    req.body.columns,
+    req.query.orderBy,
+    req.query.sort
+  );
+  if (!category) {
+    return res.status(404).send({ error: 'Categories not found' });
+  }
   res.json(category);
 };
 
 const createCategory = async (req, res) => {
-  const body = req.body;
-  const category = await CategoriesService.create(body);
-  if (!category) {
+  if (!req.body) {
     return res.status(400).send({ error: 'Missing parameters' });
+  }
+  const category = await pool.query(
+    'INSERT INTO categories (name) VALUES ($1) RETURNING *;',
+    [req.body.name]
+  );
+  if (!category) {
+    return res.status(404).send({ error: 'Category not found' });
   }
   res.send(category);
 };
 
 const getProductsByCategory = async (req, res) => {
-  const { id } = req.params;
-  const products = await CategoriesService.findProductsByCategory(id);
+  const products = await pool.query(
+    `SELECT
+    products.id, products.name, products.price, products.description, products.image, products.brand
+    FROM products
+    INNER JOIN categories ON categories.id = products.category_id
+    WHERE categories.id = $1;`,
+    [req.params.id]
+  );
   if (!products) {
     return res.status(404).send({ error: 'Category not found' });
   }
@@ -32,9 +48,13 @@ const getProductsByCategory = async (req, res) => {
 };
 
 const updateCategory = async (req, res) => {
-  const { id } = req.params;
-  const body = req.body;
-  const category = await CategoriesService.update(id, body);
+  if (!req.body || !req.params) {
+    return res.status(400).send({ error: 'Missing parameters' });
+  }
+  const category = await pool.query(
+    'UPDATE categories SET name = $1 WHERE id = $2 RETURNING *;',
+    [req.params.id, req.body.name]
+  );
   if (!category) {
     return res.status(404).send({ error: 'Category not found' });
   }
@@ -42,8 +62,13 @@ const updateCategory = async (req, res) => {
 };
 
 const deleteCategory = async (req, res) => {
-  const { id } = req.params;
-  const category = await CategoriesService.deleteCategory(id);
+  if (!req.params) {
+    return res.status(400).send({ error: 'Missing parameters' });
+  }
+  const category = await pool.query(
+    'DELETE FROM categories WHERE id = $1 RETURNING *;',
+    [req.params.id]
+  );
   if (!category) {
     return res.status(404).send({ error: 'Category not found' });
   }
@@ -52,7 +77,6 @@ const deleteCategory = async (req, res) => {
 
 module.exports = {
   getProductsByCategory,
-  getCategoriesById,
   createCategory,
   getCategories,
   deleteCategory,

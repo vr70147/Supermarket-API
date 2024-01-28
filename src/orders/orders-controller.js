@@ -1,8 +1,15 @@
 const OrdersService = require('./orders-service');
 
 const createOrder = async (req, res) => {
-  const body = req.body;
-  const order = await OrdersService.create(body);
+  const order = await pool.query(
+    'INSERT INTO orders (dateofdelivery, creditcard, address, cart_id) VALUES ($1, $2, $3, $4) RETURNING *;',
+    [
+      req.body.dateOfDelivery,
+      req.body.creditCard,
+      req.body.address,
+      req.body.cart_id,
+    ]
+  );
   if (!order) {
     res.status(500).send({ error: 'Failed to create order' });
   }
@@ -10,12 +17,21 @@ const createOrder = async (req, res) => {
 };
 
 const getOrders = async (req, res) => {
-  const query = req.params;
-  const orders = await OrdersService.find(query.pageNumber, query.pageSize);
-  if (!orders) {
-    res.status(500).send({ error: 'Failed to get orders' });
+  if (!req.body || !req.query) {
+    return res.status(400).send({ error: 'Missing parameters' });
   }
-  res.send(orders);
+  const order = await OrdersService.find(
+    req.query.pageNumber,
+    req.query.pageSize,
+    req.body.where,
+    req.body.columns,
+    req.query.orderBy,
+    req.query.sort
+  );
+  if (!order) {
+    return res.status(404).send({ error: 'orders not found' });
+  }
+  res.json(order);
 };
 
 const getOrder = async (req, res) => {

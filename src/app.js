@@ -26,7 +26,7 @@ module.exports = () => {
   app.use('/products', ProductsRouter);
   app.use('/carts', CartsRouter);
   app.use('/users', UsersRouter);
-  app.use('/category', CategoriesRouter);
+  app.use('/categories', CategoriesRouter);
   app.use('/orders', OrdersRouter);
   return app;
 };

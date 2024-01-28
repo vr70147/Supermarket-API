@@ -1,23 +1,32 @@
 const pool = require('../pool');
 const toCamelCase = require('../utils/to-camel-case');
+const filterQuery = require('../utils/find-filter');
 
 class CategoriesService {
-  static async find() {
-    const { rows } = await pool.query('SELECT * FROM categories;');
+  constructor(pool) {
+    this.pool = pool;
+  }
+
+  async find(pageNumber, pageSize, where, columns, orderBy, sort) {
+    const clientColumns = columns.toString();
+    const query = await filterQuery({
+      where: where,
+      columns: clientColumns,
+      table: 'categories',
+      orderBy: orderBy,
+      pageNumber: pageNumber,
+      pageSize: pageSize,
+      sort: sort,
+    });
+    const { rows } = await this.pool.query(query);
     if (!rows) return null;
     return toCamelCase(rows);
   }
 
-  static async findById(id) {
-    const { rows } = await pool.query(
-      'SELECT * FROM categories WHERE id = $1;',
-      [id]
-    );
-    if (!rows) return null;
-    return toCamelCase(rows)[0];
-  }
-
-  static async appendProductsToCategory(id, body) {
+  async appendProductsToCategory(id, body) {
+    if (!body.productId || !id) {
+      throw new Error('Missing product id or category id');
+    }
     const { rows } = await pool.query(
       'INSERT INTO products_categories (product_id, category_id) VALUES ($1, $2) RETURNING *;',
       [body.productId, id]
@@ -25,52 +34,6 @@ class CategoriesService {
     if (!rows) return null;
     return toCamelCase(rows)[0];
   }
-
-  static async findProductsByCategory(id) {
-    const { rows } = await pool.query(
-      `SELECT
-      products.id, products.name, products.price, products.description, products.image, products.brand
-      FROM products
-      INNER JOIN categories ON categories.id = products.category_id
-      WHERE categories.id = $1;`,
-      [id]
-    );
-    if (!rows) return res.status(404).send({ error: 'Category not found' });
-    return toCamelCase(rows);
-  }
-
-  static async create(body) {
-    const { name } = body;
-    if (!name) {
-      throw new Error('Missing parameters');
-    }
-    const { rows } = await pool.query(
-      'INSERT INTO categories (name) VALUES ($1) RETURNING *;',
-      [body.name]
-    );
-    return toCamelCase(rows)[0];
-  }
-
-  static async update(id, body) {
-    const { name } = body;
-    if (!name) {
-      throw new Error('Missing parameters');
-    }
-    const { rows } = await pool.query(
-      'UPDATE categories SET name = $1 WHERE id = $2 RETURNING *;',
-      [id, body.name]
-    );
-    return toCamelCase(rows)[0];
-  }
-
-  static async deleteCategory({ id }) {
-    const { rows } = await pool.query(
-      'DELETE FROM categories WHERE id = $1 RETURNING *;',
-      [id]
-    );
-    if (!rows) throw new Error('Category not found');
-    return toCamelCase(rows)[0];
-  }
 }
 
-module.exports = CategoriesService;
+module.exports = new CategoriesService(pool);

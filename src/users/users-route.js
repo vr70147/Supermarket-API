@@ -5,7 +5,6 @@ const isAdmin = require('../middlewares/admin-middleware');
 const UsersController = require('./users-controller');
 
 const getUsers = UsersController.getUsers;
-const getUser = UsersController.getUser;
 const addUser = UsersController.addUser;
 const updateUser = UsersController.updateUser;
 const deleteUser = UsersController.deleteUser;
@@ -13,7 +12,6 @@ const login = UsersController.login;
 const logout = UsersController.logout;
 const checkRefreshToken = UsersController.checkRefreshToken;
 
-router.get('/:id', getUser);
 router.get('/', getUsers);
 router.post('/token', checkRefreshToken);
 router.post('/login', login);

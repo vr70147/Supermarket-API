@@ -22,8 +22,19 @@ const getCart = async (req, res) => {
 };
 
 const getCartItems = async (req, res) => {
-  const { id } = req.params;
-  const cart = await CartsService.getAllItems(id);
+  if (!req.params) {
+    return res.status(400).send({ error: 'Missing parameters' });
+  }
+  const cart = await pool.query(
+    `SELECT
+    products.name, products.price, products.image, carts_users.quantity
+    FROM carts_users
+    INNER JOIN products ON products.id = carts_users.product_id
+    INNER JOIN carts ON carts.id = carts_users.cart_id
+    WHERE carts_users.cart_id = $1;
+    `,
+    [req.params.id]
+  );
   if (!cart) {
     return res.status(404).send({ error: 'Cart not found' });
   }
@@ -40,8 +51,12 @@ const addCartItem = async (req, res) => {
 };
 
 const deleteCart = async (req, res) => {
-  const { id } = req.params;
-  const cart = await CartsService.deleteCart(id);
+  if (!req.params) {
+    return res.status(400).send({ error: 'Missing parameters' });
+  }
+  const cart = await pool.query('DELETE FROM carts WHERE id = $1 RETURNING *', [
+    req.params.id,
+  ]);
   if (!cart) {
     return res.status(404).send({ error: 'Cart not found' });
   }
@@ -49,8 +64,12 @@ const deleteCart = async (req, res) => {
 };
 
 const deleteCartItem = async (req, res) => {
-  const { id } = req.params;
-  const cart = await CartsService.deleteItemFromCart(id);
+  if (!req.params) {
+    return res.status(400).send({ error: 'Missing parameters' });
+  }
+  const cart = await pool.query('DELETE FROM carts WHERE id = $1 RETURNING *', [
+    req.params.id,
+  ]);
   if (!cart) {
     return res.status(404).send({ error: 'Cart not found' });
   }
@@ -58,8 +77,13 @@ const deleteCartItem = async (req, res) => {
 };
 
 const deleteAllItems = async (req, res) => {
-  const { id } = req.params;
-  const cart = await CartsService.deleteAllItems(id);
+  if (!req.params) {
+    return res.status(400).send({ error: 'Missing parameters' });
+  }
+  const cart = await pool.query(
+    'DELETE FROM carts WHERE product_id = $1 RETURNING *',
+    [req.params.id]
+  );
   if (!cart) {
     return res.status(404).send({ error: 'Cart not found' });
   }
@@ -67,7 +91,13 @@ const deleteAllItems = async (req, res) => {
 };
 
 const addCart = async (req, res) => {
-  const cart = await CartsService.addCart(req.body.id);
+  if (!req.body) {
+    return res.status(400).send({ error: 'Missing parameters' });
+  }
+  const cart = await pool.query(
+    'INSERT INTO carts (user_id) VALUES ($1) RETURNING *',
+    [req.body.user_id]
+  );
   if (!cart) {
     return res.status(409).send({ error: 'Cart already exists' });
   }

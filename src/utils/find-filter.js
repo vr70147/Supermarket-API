@@ -3,7 +3,10 @@ const filterQuery = async (filter) => {
   if (!filter.table) throw new Error('Missing table');
 
   const { column, value } = filter.where;
-  const where = `WHERE ${column} = ${value}`;
+
+  const where = `WHERE ${column}=${
+    typeof value === 'string' ? `'${value}'` : value
+  }`;
   const limit = `LIMIT ${filter.pageSize}`;
   const offset = `OFFSET ((${filter.pageNumber} - 1) * ${filter.pageSize})`;
   const query = `

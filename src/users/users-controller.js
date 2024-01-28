@@ -18,15 +18,6 @@ const getUsers = async (req, res) => {
   res.send(users);
 };
 
-const getUser = async (req, res) => {
-  const id = req.params;
-  const user = await UserService.findById(id);
-  if (!user) {
-    return res.status(404).send({ error: 'User not found' });
-  }
-  res.send(user);
-};
-
 const addUser = async (req, res) => {
   const createUser = await UserService.addUser(req.body);
   if (!createUser) {
@@ -113,7 +104,6 @@ module.exports = {
   addRefreshToken,
   checkRefreshToken,
   getUsers,
-  getUser,
   addUser,
   login,
   logout,

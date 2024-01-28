@@ -12,11 +12,18 @@ class UserService {
   }
 
   async loginUser(email, password) {
-    const user = await this.findByEmail(email);
+    const user = await this.find(
+      undefined,
+      undefined,
+      { column: 'email', value: email },
+      ['id', 'email', 'password'],
+      undefined,
+      undefined
+    );
     if (!user) {
       throw new Error({ error: 'User not found' });
     }
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    const passwordMatch = await bcrypt.compare(password, user[0].password);
     if (!passwordMatch) {
       throw new Error({ error: 'Invalid password' });
     }
@@ -39,16 +46,22 @@ class UserService {
     if (!createToken) {
       throw new Error({ error: 'Failed to create token' });
     }
-    const userId = user.id;
-    const checkCartExists = await CartsService.checkCartExists(userId);
-    if (!checkCartExists) {
-      await CartsService.addCart(userId);
+    const userId = user[0].id;
+    const checkCartExists = await this.pool.query(
+      `SELECT *
+      FROM carts
+      WHERE user_id = $1`,
+      [userId]
+    );
+    if (checkCartExists.rows.length === 0) {
+      await pool.query('INSERT INTO carts (user_id) VALUES ($1) RETURNING *', [
+        userId,
+      ]);
     }
     return { accessToken: accessToken, refreshToken: refreshToken };
   }
 
   async find(pageNumber, pageSize, where, columns, orderBy, sort) {
-    console.log(where);
     const clientColumns = columns.toString();
     const query = await filterQuery({
       where: where,
@@ -60,23 +73,8 @@ class UserService {
       sort: sort,
     });
     const { rows } = await this.pool.query(query);
+    if (!rows) return null;
     return toCamelCase(rows);
-  }
-
-  async findById({ id }) {
-    const { rows } = await pool.query(
-      'SELECT created_at, role, email, firstname, lastname, phone, address, birthdate FROM users WHERE id = $1',
-      [id]
-    );
-    return toCamelCase(rows)[0];
-  }
-
-  async findByEmail(email) {
-    const { rows } = await pool.query('SELECT * FROM users WHERE email = $1', [
-      email,
-    ]);
-    if (!rows) return res.status(404).send({ error: 'User not found' });
-    return toCamelCase(rows)[0];
   }
 
   async addUser(body) {
@@ -86,7 +84,14 @@ class UserService {
       payload[key] = value;
     }
     //Check if user already exists
-    const user = await this.findByEmail(payload.email);
+    const user = await this.find(
+      null,
+      null,
+      { column: 'email', value: payload.email },
+      ['email'],
+      null,
+      null
+    );
     if (user) throw new Error({ error: 'User already exists' });
 
     const salt = await bcrypt.genSalt(10);

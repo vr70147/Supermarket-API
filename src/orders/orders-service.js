@@ -1,22 +1,28 @@
 const pool = require('../pool');
 const toCamelCase = require('../utils/to-camel-case');
+const filterQuery = require('../utils/find-filter');
 
 class OrdersService {
-  static async find(pageNumber, pageSize) {
-    const { rows } = await pool.query(
-      `
-      SELECT * FROM orders
-      ORDER BY "orders"."id"
-      LIMIT $2
-      OFFSET (($1 - 1) * $2);
-    `,
-      [pageNumber, pageSize]
-    );
+  constructor(pool) {
+    this.pool = pool;
+  }
+  async find(pageNumber, pageSize, where, columns, orderBy, sort) {
+    const clientColumns = columns.toString();
+    const query = await filterQuery({
+      where: where,
+      columns: clientColumns,
+      table: 'orders',
+      orderBy: orderBy,
+      pageNumber: pageNumber,
+      pageSize: pageSize,
+      sort: sort,
+    });
+    const { rows } = await this.pool.query(query);
     if (!rows) return null;
     return toCamelCase(rows);
   }
 
-  static async findById(id) {
+  async findById(id) {
     const { rows } = await pool.query(
       `
       SELECT products.name, products.price, carts_users.quantity, SUM(products.price * carts_users.quantity) AS total
@@ -32,7 +38,7 @@ class OrdersService {
     return rows;
   }
 
-  static async findUserByOrder(id) {
+  async findUserByOrder(id) {
     const { rows } = await pool.query(
       `
       SELECT users.firstname, users.lastname, users.email, users.phone, users.address
@@ -47,7 +53,7 @@ class OrdersService {
     return rows;
   }
 
-  static async sumAllPrices(id) {
+  async sumAllPrices(id) {
     const { rows } = await pool.query(
       `
       SELECT SUM(products.price * carts_users.quantity) AS total
@@ -61,14 +67,6 @@ class OrdersService {
     if (!rows) return null;
     return rows;
   }
-
-  static async create(body) {
-    const { rows } = await pool.query(
-      'INSERT INTO orders (dateofdelivery, creditcard, address, cart_id) VALUES ($1, $2, $3, $4) RETURNING *;',
-      [body.dateOfDelivery, body.creditCard, body.address, body.cart_id]
-    );
-    return toCamelCase(rows)[0];
-  }
 }
 
-module.exports = OrdersService;
+module.exports = new OrdersService(pool);
