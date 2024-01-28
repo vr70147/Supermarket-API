@@ -1,11 +1,17 @@
 const UserService = require('./user-service');
 
 const getUsers = async (req, res) => {
-  const query = req.params;
-  if (!query) {
+  if (!req.body || !req.query) {
     return res.status(400).send({ error: 'Missing parameters' });
   }
-  const users = await UserService.find(query.pageNumber, query.pageSize);
+  const users = await UserService.find(
+    req.query.pageNumber,
+    req.query.pageSize,
+    req.body.where,
+    req.body.columns,
+    req.query.orderBy,
+    req.query.sort
+  );
   if (!users) {
     return null;
   }

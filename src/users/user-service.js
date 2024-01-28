@@ -1,5 +1,6 @@
 const pool = require('../pool');
 const toCamelCase = require('../utils/to-camel-case');
+const filterQuery = require('../utils/find-filter');
 const CartsService = require('../carts/carts-service');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -46,18 +47,19 @@ class UserService {
     return { accessToken: accessToken, refreshToken: refreshToken };
   }
 
-  async find(pageNumber, pageSize) {
-    const { rows } = await this.pool.query(
-      `SELECT
-      created_at, firstname, lastname, email, role, phone, address, birthdate
-      FROM users
-      WHERE role = 'user'
-      ORDER BY "users"."id"
-      LIMIT $2
-      OFFSET (($1 - 1) * $2);
-      `,
-      [pageNumber, pageSize]
-    );
+  async find(pageNumber, pageSize, where, columns, orderBy, sort) {
+    console.log(where);
+    const clientColumns = columns.toString();
+    const query = await filterQuery({
+      where: where,
+      columns: clientColumns,
+      table: 'users',
+      orderBy: orderBy,
+      pageNumber: pageNumber,
+      pageSize: pageSize,
+      sort: sort,
+    });
+    const { rows } = await this.pool.query(query);
     return toCamelCase(rows);
   }
 

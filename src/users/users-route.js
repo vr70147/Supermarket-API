@@ -13,13 +13,13 @@ const login = UsersController.login;
 const logout = UsersController.logout;
 const checkRefreshToken = UsersController.checkRefreshToken;
 
-router.get('/:id', isAuth, getUser);
-router.get('/', isAuth, isAdmin, getUsers);
+router.get('/:id', getUser);
+router.get('/', getUsers);
 router.post('/token', checkRefreshToken);
 router.post('/login', login);
 router.delete('/logout', logout);
 router.post('/register', addUser);
-router.put('/:id', isAuth, updateUser);
-router.delete('/:id', isAuth, deleteUser);
+router.put('/:id', updateUser);
+router.delete('/:id', deleteUser);
 
 module.exports = router;
