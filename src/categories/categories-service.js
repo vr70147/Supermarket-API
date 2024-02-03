@@ -27,7 +27,7 @@ class CategoriesService {
     if (!body.productId || !id) {
       throw new Error('Missing product id or category id');
     }
-    const { rows } = await pool.query(
+    const { rows } = await this.pool.query(
       'INSERT INTO products_categories (product_id, category_id) VALUES ($1, $2) RETURNING *;',
       [body.productId, id]
     );

@@ -25,7 +25,7 @@ const getCartItems = async (req, res) => {
   if (!req.params) {
     return res.status(400).send({ error: 'Missing parameters' });
   }
-  const cart = await pool.query(
+  const cart = await CartsService.pool.query(
     `SELECT
     products.name, products.price, products.image, carts_users.quantity
     FROM carts_users
@@ -54,9 +54,10 @@ const deleteCart = async (req, res) => {
   if (!req.params) {
     return res.status(400).send({ error: 'Missing parameters' });
   }
-  const cart = await pool.query('DELETE FROM carts WHERE id = $1 RETURNING *', [
-    req.params.id,
-  ]);
+  const cart = await CartsService.pool.query(
+    'DELETE FROM carts WHERE id = $1 RETURNING *',
+    [req.params.id]
+  );
   if (!cart) {
     return res.status(404).send({ error: 'Cart not found' });
   }
@@ -67,9 +68,10 @@ const deleteCartItem = async (req, res) => {
   if (!req.params) {
     return res.status(400).send({ error: 'Missing parameters' });
   }
-  const cart = await pool.query('DELETE FROM carts WHERE id = $1 RETURNING *', [
-    req.params.id,
-  ]);
+  const cart = await CartsService.pool.query(
+    'DELETE FROM carts WHERE id = $1 RETURNING *',
+    [req.params.id]
+  );
   if (!cart) {
     return res.status(404).send({ error: 'Cart not found' });
   }
@@ -80,7 +82,7 @@ const deleteAllItems = async (req, res) => {
   if (!req.params) {
     return res.status(400).send({ error: 'Missing parameters' });
   }
-  const cart = await pool.query(
+  const cart = await CartsService.pool.query(
     'DELETE FROM carts WHERE product_id = $1 RETURNING *',
     [req.params.id]
   );
@@ -94,7 +96,7 @@ const addCart = async (req, res) => {
   if (!req.body) {
     return res.status(400).send({ error: 'Missing parameters' });
   }
-  const cart = await pool.query(
+  const cart = await CartsService.pool.query(
     'INSERT INTO carts (user_id) VALUES ($1) RETURNING *',
     [req.body.user_id]
   );

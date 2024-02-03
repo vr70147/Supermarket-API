@@ -22,7 +22,7 @@ const createCategory = async (req, res) => {
   if (!req.body) {
     return res.status(400).send({ error: 'Missing parameters' });
   }
-  const category = await pool.query(
+  const category = await CategoriesService.pool.query(
     'INSERT INTO categories (name) VALUES ($1) RETURNING *;',
     [req.body.name]
   );
@@ -33,7 +33,7 @@ const createCategory = async (req, res) => {
 };
 
 const getProductsByCategory = async (req, res) => {
-  const products = await pool.query(
+  const products = await CategoriesService.pool.query(
     `SELECT
     products.id, products.name, products.price, products.description, products.image, products.brand
     FROM products
@@ -51,7 +51,7 @@ const updateCategory = async (req, res) => {
   if (!req.body || !req.params) {
     return res.status(400).send({ error: 'Missing parameters' });
   }
-  const category = await pool.query(
+  const category = await CategoriesService.pool.query(
     'UPDATE categories SET name = $1 WHERE id = $2 RETURNING *;',
     [req.params.id, req.body.name]
   );
@@ -65,7 +65,7 @@ const deleteCategory = async (req, res) => {
   if (!req.params) {
     return res.status(400).send({ error: 'Missing parameters' });
   }
-  const category = await pool.query(
+  const category = await CategoriesService.pool.query(
     'DELETE FROM categories WHERE id = $1 RETURNING *;',
     [req.params.id]
   );

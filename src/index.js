@@ -5,7 +5,7 @@ require('dotenv').config();
 
 pool
   .connect({
-    host: 'localhost',
+    host: 'host.docker.internal',
     port: process.env.PG_PORT,
     database: 'store',
     user: process.env.PG_USER,
@@ -13,7 +13,7 @@ pool
   })
   .then(() => {
     app().listen(process.env.PORT, () => {
-      console.log('Server running on port 3005');
+      console.log(`Server running on port ${process.env.PORT}`);
     });
   })
   .catch((err) => {
