@@ -1,8 +1,8 @@
-# Supermarket API
+# <span style="color:lightblue">Supermarket API</span>
 
-### The Supermarket API is a RESTful API built with Node.js and PostgreSQL, providing endpoints for managing supermarket products, categories, users, carts and orders.
+### <span style="color:lightblue">The Supermarket API is a RESTful API built with Node.js and PostgreSQL, providing endpoints for managing supermarket products, categories, users, carts and orders.</span>
 
-## Table of Contents
+## <span style="color:lightblue">Table of Contents</span>
 
 - Features
 - Installation
@@ -12,7 +12,7 @@
 - Contributing
 - License
 
-## Features
+## <span style="color:lightblue">Features</span>
 
 - Product Management: Create, read, update, and delete supermarket products.
 - Category Management: Manage categories for organizing products.
@@ -20,48 +20,48 @@
 - Order Management: Place orders, view order history, and manage orders.
 - Security: Password hashing, authentication using JWT tokens.
 
-## Installation
+## <span style="color:lightblue">Installation</span>
 
 To run the Supermarket API locally, follow these steps:
 
 1. Clone this repository:
 
-   bash
-
-   git clone https://github.com/vr70147/store.git
+```bash
+git clone https://github.com/vr70147/store.git
+```
 
 2. Navigate to the project directory:
 
-   bash
-
-   cd store
+```bash
+cd store
+```
 
 3. Install dependencies:
 
-   bash
-
-   npm install
+```bash
+npm install
+```
 
 4. Set up your PostgreSQL database and update the database configuration in config.js.
 
 5. Run the database migrations:
 
-   bash
-
+```bash
    npm run migrate
+```
 
 6. Start the server:
 
-   bash
-
+```bash
    npm start
+```
 
-## Usage
+## <span style="color:lightblue">Usage</span>
 
 Once the server is running, you can interact with the API using HTTP requests to the provided endpoints. You can use tools like Postman or curl to send requests.
 Endpoints
 
-### The Supermarket API provides the following endpoints:
+### <span style="color:lightblue">The Supermarket API provides the following endpoints:</span>
 
 - /products: CRUD operations for supermarket products.
 - /categories: CRUD operations for product categories.
@@ -71,7 +71,7 @@ Endpoints
 
 For detailed information about each endpoint, refer to the API documentation.
 
-## Technologies Used
+## <span style="color:lightblue">Technologies Used</span>
 
 - Node.js: JavaScript runtime for building server-side applications.
 - Express.js: Web framework for Node.js.
@@ -80,10 +80,10 @@ For detailed information about each endpoint, refer to the API documentation.
 - jsonwebtoken: Library for generating JWT tokens.
 - Other Dependencies: pg for PostgreSQL database interaction, dotenv for environment variable management, morgan for HTTP request logging.
 
-## Contributing
+## <span style="color:lightblue">Contributing</span>
 
 Contributions to the Supermarket API are welcome! If you have any ideas, suggestions, or bug fixes, please open an issue or submit a pull request.
 
-## License
+## <span style="color:lightblue">License</span>
 
 This project is licensed under the MIT License.
