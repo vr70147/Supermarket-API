@@ -1,5 +1,6 @@
 const router = require('express').Router();
-const isAuth = require('../middlewares/auth-middleware');
+const checkAuth = require('../middlewares/auth-middleware');
+const checkAdmin = require('../middlewares/admin-middleware');
 const CartsController = require('./carts-controller');
 
 const getCart = CartsController.getCart;
@@ -11,13 +12,13 @@ const deleteCartItem = CartsController.deleteCartItem;
 const deleteAllItems = CartsController.deleteAllItems;
 const getCartItems = CartsController.getCartItems;
 
-router.get('/:id', isAuth, getCart);
-router.get('/', isAuth, getCarts);
-router.post('/', addCart);
-router.delete('/:id', isAuth, deleteCart);
-router.post('/:id', addCartItem);
-router.delete('/:id/items/:itemId', isAuth, deleteCartItem);
-router.delete('/:id/items', isAuth, deleteAllItems);
-router.get('/:id/items', getCartItems);
+router.get('/:id', checkAuth, getCart);
+router.get('/', checkAdmin, getCarts);
+router.post('/', checkAuth, addCart);
+router.delete('/:id', checkAdmin, deleteCart);
+router.post('/:id', checkAuth, addCartItem);
+router.delete('/:id/items/:itemId', checkAuth, deleteCartItem);
+router.delete('/:id/items', checkAuth, deleteAllItems);
+router.get('/:id/items', checkAuth, getCartItems);
 
 module.exports = router;

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const isAuth = require('../middlewares/auth-middleware');
-const isAdmin = require('../middlewares/admin-middleware');
+const checkAuth = require('../middlewares/auth-middleware');
+const checkAdmin = require('../middlewares/admin-middleware');
 const UsersController = require('./users-controller');
 
 const getUsers = UsersController.getUsers;
@@ -12,12 +12,12 @@ const login = UsersController.login;
 const logout = UsersController.logout;
 const checkRefreshToken = UsersController.checkRefreshToken;
 
-router.get('/', getUsers);
-router.post('/token', checkRefreshToken);
+router.get('/', checkAdmin, checkAuth, getUsers);
+router.post('/token', checkAuth, checkRefreshToken);
 router.post('/login', login);
-router.delete('/logout', logout);
-router.post('/register', addUser);
-router.put('/:id', updateUser);
-router.delete('/:id', deleteUser);
+router.delete('/logout', checkAuth, logout);
+router.post('/regcheckter', addUser);
+router.put('/:id', checkAuth, updateUser);
+router.delete('/:id', checkAdmin, checkAuth, deleteUser);
 
 module.exports = router;

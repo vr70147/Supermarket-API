@@ -12,8 +12,8 @@ const updateCategory = CategoriesController.updateCategory;
 
 router.get('/', getCategories);
 router.get('/:id/products', findProductsByCategory);
-router.post('/', addCategory);
-router.delete('/:id', deleteCategory);
-router.put('/:id', updateCategory);
+router.post('/', checkAdmin, addCategory);
+router.delete('/:id', checkAdmin, deleteCategory);
+router.put('/:id', checkAdmin, updateCategory);
 
 module.exports = router;
