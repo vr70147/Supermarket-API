@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const CategoriesController = require('./categories-controller');
 const checkAuth = require('../middlewares/auth-middleware');
+const checkAdmin = require('../middlewares/admin-middleware');
 
 const getCategories = CategoriesController.getCategories;
 const findProductsByCategory = CategoriesController.getProductsByCategory;

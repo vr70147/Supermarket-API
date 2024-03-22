@@ -5,7 +5,7 @@ require('dotenv').config();
 
 pool
   .connect({
-    host: 'host.docker.internal',
+    host: '127.0.0.1',
     port: process.env.PG_PORT,
     database: 'store',
     user: process.env.PG_USER,

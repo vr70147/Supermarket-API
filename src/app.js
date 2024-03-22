@@ -1,13 +1,16 @@
 const express = require('express');
+const morgan = require('morgan');
+
 const UsersRouter = require('./users/users-route');
 const CartsRouter = require('./carts/carts-route');
 const ProductsRouter = require('./products/products-route');
 const CategoriesRouter = require('./categories/categories-route');
 const OrdersRouter = require('./orders/orders-route');
-const morgan = require('morgan');
 
 module.exports = () => {
   const app = express();
+
+  // Middleware
   app.use(morgan('combined'));
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
@@ -23,10 +26,13 @@ module.exports = () => {
     );
     next();
   });
+
+  // Routers
   app.use('/products', ProductsRouter);
   app.use('/carts', CartsRouter);
   app.use('/users', UsersRouter);
   app.use('/categories', CategoriesRouter);
   app.use('/orders', OrdersRouter);
+
   return app;
 };
