@@ -1,6 +1,6 @@
 # Supermarket API
 
-## The Supermarket API is a RESTful API built with Node.js and PostgreSQL, providing endpoints for managing supermarket products, categories, users, and orders.
+### The Supermarket API is a RESTful API built with Node.js and PostgreSQL, providing endpoints for managing supermarket products, categories, users, carts and orders.
 
 ## Table of Contents
 
@@ -36,11 +36,11 @@ To run the Supermarket API locally, follow these steps:
 
    cd store
 
-3.Install dependencies:
+3. Install dependencies:
 
-    bash
+   bash
 
-    npm install
+   npm install
 
 4. Set up your PostgreSQL database and update the database configuration in config.js.
 
