@@ -10,7 +10,6 @@
 - Endpoints
 - Technologies Used
 - Contributing
-- License
 
 ## <span style="color:#008B8B;">Features</span>
 
@@ -70,8 +69,6 @@ Once the server is running, you can interact with the API using HTTP requests to
 - /users: User registration, authentication, and account management.
 - /orders: Place orders, view order history, and manage orders.
 
-For detailed information about each endpoint, refer to the API documentation.
-
 ## <span style="color:#008B8B;">Technologies Used</span>
 
 - <b>Node.js:</b> JavaScript runtime for building server-side applications.
@@ -84,7 +81,3 @@ For detailed information about each endpoint, refer to the API documentation.
 ## <span style="color:#008B8B;">Contributing</span>
 
 Contributions to the Supermarket API are welcome! If you have any ideas, suggestions, or bug fixes, please open an issue or submit a pull request.
-
-## <span style="color:#008B8B;">License</span>
-
-This project is licensed under the MIT License.
