@@ -20,8 +20,14 @@ const getProducts = async (req, res) => {
 
 const addProduct = async (req, res) => {
   const product = await ProductService.pool.query(
-    'INSERT INTO products (name, price, description) VALUES ($1, $2, $3) RETURNING *;',
-    [req.body.name, req.body.price, req.body.description]
+    'INSERT INTO products (name, price, description, image, brand) VALUES ($1, $2, $3, $4, $5) RETURNING *;',
+    [
+      req.body.name,
+      req.body.price,
+      req.body.description,
+      req.body.image,
+      req.body.brand,
+    ]
   );
   res.status(201).json(product);
 };
