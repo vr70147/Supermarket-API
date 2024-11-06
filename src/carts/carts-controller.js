@@ -1,109 +1,134 @@
 const CartsService = require('./carts-service');
 
 const getCarts = async (req, res) => {
-  const { query } = req.params;
-  if (!query) {
-    return res.status(400).send({ error: 'Missing parameters' });
+  try {
+    const { pageNumber, pageSize } = req.query;
+    if (!pageNumber || !pageSize) {
+      return res.status(400).json({ error: 'Missing parameters' });
+    }
+    const carts = await CartsService.find(pageNumber, pageSize);
+    if (!carts || carts.length === 0) {
+      return res.status(404).json({ error: 'No carts found' });
+    }
+    res.json(carts);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
   }
-  const carts = await CartsService.find(query.pageNumber, query.pageSize);
-  if (!carts) {
-    return null;
-  }
-  res.send(carts);
 };
 
 const getCart = async (req, res) => {
-  const { id } = req.params;
-  const cart = await CartsService.findById(id);
-  if (!cart) {
-    return res.status(404).send({ error: 'Cart not found' });
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: 'Missing cart ID' });
+    }
+    const cart = await CartsService.findById(id);
+    if (!cart) {
+      return res.status(404).json({ error: 'Cart not found' });
+    }
+    res.json(cart);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
   }
-  res.send(cart);
 };
 
 const getCartItems = async (req, res) => {
-  if (!req.params) {
-    return res.status(400).send({ error: 'Missing parameters' });
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: 'Missing cart ID' });
+    }
+    const cartItems = await CartsService.getCartItemsById(id);
+    if (!cartItems || cartItems.length === 0) {
+      return res.status(404).json({ error: 'Cart items not found' });
+    }
+    res.json(cartItems);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
   }
-  const cart = await CartsService.pool.query(
-    `SELECT
-    products.name, products.price, products.image, carts_users.quantity
-    FROM carts_users
-    INNER JOIN products ON products.id = carts_users.product_id
-    INNER JOIN carts ON carts.id = carts_users.cart_id
-    WHERE carts_users.cart_id = $1;
-    `,
-    [req.params.id]
-  );
-  if (!cart) {
-    return res.status(404).send({ error: 'Cart not found' });
-  }
-  res.send(cart);
 };
 
 const addCartItem = async (req, res) => {
-  const { id } = req.params;
-  const cart = await CartsService.addItemToCart(id, req.body);
-  if (!cart) {
-    return res.status(404).send({ error: 'Cart not found' });
+  try {
+    const { id } = req.params;
+    if (!req.body.product_id || !req.body.quantity) {
+      return res.status(400).json({ error: 'Missing product details' });
+    }
+    const cartItem = await CartsService.addItemToCart(id, req.body);
+    if (!cartItem) {
+      return res.status(404).json({ error: 'Cart not found' });
+    }
+    res.status(201).json(cartItem);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
   }
-  res.send(cart);
 };
 
 const deleteCart = async (req, res) => {
-  if (!req.params) {
-    return res.status(400).send({ error: 'Missing parameters' });
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: 'Missing cart ID' });
+    }
+    const deletedCart = await CartsService.deleteCartById(id);
+    if (!deletedCart) {
+      return res.status(404).json({ error: 'Cart not found' });
+    }
+    res.json(deletedCart);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
   }
-  const cart = await CartsService.pool.query(
-    'DELETE FROM carts WHERE id = $1 RETURNING *',
-    [req.params.id]
-  );
-  if (!cart) {
-    return res.status(404).send({ error: 'Cart not found' });
-  }
-  res.send(cart);
 };
 
 const deleteCartItem = async (req, res) => {
-  if (!req.params) {
-    return res.status(400).send({ error: 'Missing parameters' });
+  try {
+    const { id, productId } = req.params;
+    if (!id || !productId) {
+      return res.status(400).json({ error: 'Missing parameters' });
+    }
+    const deletedItem = await CartsService.deleteItemFromCart(id, productId);
+    if (!deletedItem) {
+      return res.status(404).json({ error: 'Cart item not found' });
+    }
+    res.json(deletedItem);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
   }
-  const cart = await CartsService.pool.query(
-    'DELETE FROM carts WHERE id = $1 RETURNING *',
-    [req.params.id]
-  );
-  if (!cart) {
-    return res.status(404).send({ error: 'Cart not found' });
-  }
-  res.send(cart);
 };
 
 const deleteAllItems = async (req, res) => {
-  if (!req.params) {
-    return res.status(400).send({ error: 'Missing parameters' });
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: 'Missing cart ID' });
+    }
+    const deletedItems = await CartsService.deleteAllItemsFromCart(id);
+    if (!deletedItems) {
+      return res.status(404).json({ error: 'No items found in cart' });
+    }
+    res.json({ message: 'All items deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
   }
-  const cart = await CartsService.pool.query(
-    'DELETE FROM carts WHERE product_id = $1 RETURNING *',
-    [req.params.id]
-  );
-  if (!cart) {
-    return res.status(404).send({ error: 'Cart not found' });
-  }
-  res.send(cart);
 };
 
 const addCart = async (req, res) => {
-  if (!req.body) {
-    return res.status(400).send({ error: 'Missing parameters' });
+  try {
+    const user_id = req.user && req.user.userId;
+    if (!user_id) {
+      return res
+        .status(401)
+        .json({ error: 'Unauthorized: User ID missing from token' });
+    }
+    const newCart = await CartsService.createCart(user_id);
+    if (!newCart) {
+      return res.status(409).json({ error: 'Cart creation failed' });
+    }
+    res.status(201).json(newCart);
+  } catch (error) {
+    console.error('Error adding cart:', error); // Log the error for debugging purposes
+    res.status(500).json({ error: 'Internal server error' });
   }
-  const cart = await CartsService.pool.query(
-    'INSERT INTO carts (user_id) VALUES ($1) RETURNING *',
-    [req.body.user_id]
-  );
-  if (!cart) {
-    return res.status(409).send({ error: 'Cart already exists' });
-  }
-  res.send(cart);
 };
 
 module.exports = {
