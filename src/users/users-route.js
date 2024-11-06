@@ -16,7 +16,7 @@ router.get('/', checkAdmin, checkAuth, getUsers);
 router.post('/token', checkAuth, checkRefreshToken);
 router.post('/login', login);
 router.delete('/logout', checkAuth, logout);
-router.post('/regcheckter', addUser);
+router.post('/register', addUser);
 router.put('/:id', checkAuth, updateUser);
 router.delete('/:id', checkAdmin, checkAuth, deleteUser);
 

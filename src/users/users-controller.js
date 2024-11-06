@@ -1,103 +1,143 @@
 const UserService = require('./user-service');
 
-const getUsers = async (req, res) => {
-  if (!req.body || !req.query) {
-    return res.status(400).send({ error: 'Missing parameters' });
+const getUsers = async (req, res, next) => {
+  try {
+    const { pageNumber, pageSize, orderBy, sort } = req.query;
+    const { where, columns } = req.body;
+
+    if (!pageNumber || !pageSize || !where || !columns) {
+      return res.status(400).send({ error: 'Missing parameters' });
+    }
+    console.log(columns);
+    const users = await UserService.find(
+      pageNumber,
+      pageSize,
+      where,
+      columns,
+      orderBy,
+      sort
+    );
+    if (!users.length) {
+      return res.status(404).send({ error: 'No users found' });
+    }
+
+    res.status(200).send(users);
+  } catch (error) {
+    next(error);
   }
-  const users = await UserService.find(
-    req.query.pageNumber,
-    req.query.pageSize,
-    req.body.where,
-    req.body.columns,
-    req.query.orderBy,
-    req.query.sort
-  );
-  if (!users) {
-    return null;
-  }
-  res.send(users);
 };
 
-const addUser = async (req, res) => {
-  const createUser = await UserService.addUser(req.body);
-  if (!createUser) {
-    return res.status(400).send({ error: 'Missing parameters' });
+const addUser = async (req, res, next) => {
+  try {
+    const newUser = await UserService.addUser(req.body);
+    if (!newUser) {
+      return res
+        .status(400)
+        .send({ error: 'Missing parameters or invalid data' });
+    }
+    res.status(201).send(newUser);
+  } catch (error) {
+    next(error);
   }
-  res.send(createUser);
 };
 
-const login = async (req, res) => {
-  const { email, password } = req.body;
-  const user = await UserService.loginUser(email, password);
-  if (!user) {
-    return res.status(401).send({ error: 'Invalid credentials' });
+const login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).send({ error: 'Email and password are required' });
+    }
+
+    const user = await UserService.loginUser(email, password);
+    if (!user) {
+      return res.status(401).send({ error: 'Invalid credentials' });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    next(error);
   }
-  res.json(user);
 };
 
-const logout = async (req, res) => {
-  await UserService.pool.query(
-    'DELETE FROM tokens WHERE token = $1 RETURNING token',
-    [req.token]
-  );
-  return res.status(204).send();
+const logout = async (req, res, next) => {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).send({ error: 'Token is required' });
+    }
+
+    await UserService.deleteToken(token);
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
 };
 
-const updateUser = async (req, res) => {
-  const { id } = req.params;
-  const user = await UserService.pool.query(
-    'UPDATE users SET email = $1, password = $2, firstname = $3, lastname = $4, phone = $5, personal_id = $6, address = $7, birthdate = $8 WHERE id = $9 RETURNING email, firstname, lastname, phone, address, birthdate',
-    [
-      req.body.email,
-      req.body.password,
-      req.body.firstname,
-      req.body.lastname,
-      req.body.phone,
-      req.body.personal_id,
-      req.body.address,
-      req.body.birthdate,
-      id,
-    ]
-  );
-  if (!user) {
-    return res.status(404).send({ error: 'User not found' });
+const updateUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).send({ error: 'User ID is required' });
+    }
+
+    const updatedUser = await UserService.updateUser(id, req.body);
+    if (!updatedUser) {
+      return res.status(404).send({ error: 'User not found' });
+    }
+    res.status(200).send(updatedUser);
+  } catch (error) {
+    next(error);
   }
-  res.send(user);
 };
 
-const deleteUser = async (req, res) => {
-  const { id } = req.params;
-  const user = await UserService.pool.query(
-    'DELETE FROM users WHERE id = $1 RETURNING email, firstname',
-    [id]
-  );
-  if (!user) {
-    return res.status(404).send({ error: 'User not found' });
+const deleteUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).send({ error: 'User ID is required' });
+    }
+
+    const deletedUser = await UserService.deleteUser(id);
+    if (!deletedUser) {
+      return res.status(404).send({ error: 'User not found' });
+    }
+    res.status(200).send(deletedUser);
+  } catch (error) {
+    next(error);
   }
-  res.send(user);
 };
 
-const checkRefreshToken = async (req, res) => {
-  //Get refresh token from client
-  const { bodyRefreshToken } = req.body.token;
-  const getAccessToken = await UserService.checkRefreshToken(bodyRefreshToken);
-  if (!getAccessToken) {
-    return res.status(401).send({ error: 'Invalid refresh token' });
+const checkRefreshToken = async (req, res, next) => {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).send({ error: 'Refresh token is required' });
+    }
+
+    const accessToken = await UserService.checkRefreshToken(token);
+    if (!accessToken) {
+      return res.status(401).send({ error: 'Invalid refresh token' });
+    }
+    res.status(200).json({ accessToken });
+  } catch (error) {
+    next(error);
   }
-  res.json({ accessToken: getAccessToken });
 };
 
-const addRefreshToken = async (req, res) => {
-  const { id } = req.params;
-  const { token } = req.body;
-  const userToken = await pool.query(
-    'INSERT INTO tokens (token) VALUES ($1) RETURNING *',
-    [token]
-  );
-  if (!userToken) {
-    return res.status(409).send({ error: 'Token already exists' });
+const addRefreshToken = async (req, res, next) => {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).send({ error: 'Token is required' });
+    }
+
+    const addedToken = await UserService.addRefreshToken(token);
+    if (!addedToken) {
+      return res.status(409).send({ error: 'Token already exists' });
+    }
+    res.status(201).send(addedToken);
+  } catch (error) {
+    next(error);
   }
-  res.send(userToken);
 };
 
 module.exports = {
